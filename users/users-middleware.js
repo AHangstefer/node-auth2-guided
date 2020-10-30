@@ -1,6 +1,8 @@
 const { JsonWebTokenError } = require("jsonwebtoken")
 
-function restrict() {
+const roles = ["basic", "admin"]
+
+function restrict(role) {
 	return async (req, res, next) => {
 		try {
 			// express-session will automatically get the session ID from the cookie
@@ -10,14 +12,21 @@ function restrict() {
 			// 		message: "Invalid credentials",
 			// 	})
 			// }
-			const token = req.headers.authorization
+			//const token = req.headers.authorization (cookies)
+			const token = req.cookies.token
 			if(!token) {
 				return res.status(401).json({
 					message: "Invalid credentials"
 				})
 			}
 
-			jwt.verify(token, "keep it secret", (err, decoded) => {
+			if (role && roles.indexOf(decoded.userRole) < roles.indexOf(role)){
+				return res.status(401).json({
+					message: "invalid"
+				})
+			}
+
+			jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
 				if(err){
 					return res.status(401).json({
 						message: "invalid credentials",
