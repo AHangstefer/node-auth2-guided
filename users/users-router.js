@@ -2,6 +2,7 @@ const express = require("express")
 const bcrypt = require("bcryptjs")
 const Users = require("./users-model")
 const { restrict } = require("./users-middleware")
+const jwt = require("jsonwebtoken")
 
 const router = express.Router()
 
@@ -58,10 +59,18 @@ router.post("/login", async (req, res, next) => {
 
 		// generate a new session for this user,
 		// and sends back a session ID
-		req.session.user = user
+		//req.session.user = user
+		//taking this out in exchange for a token
+
+		const token = gwt.sign({
+			userID: user.id,
+			userRole: user.role,
+
+		}, process.env.JWT_SECRET)
 
 		res.json({
 			message: `Welcome ${user.username}!`,
+			token: token,
 		})
 	} catch(err) {
 		next(err)
